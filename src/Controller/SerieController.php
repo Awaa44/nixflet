@@ -6,6 +6,7 @@ use App\Entity\Serie;
 use App\Repository\SerieRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -31,13 +32,37 @@ final class SerieController extends AbstractController
         return new Response('Une nouvelle série a été créée');
     }
 
-    #[Route('/liste', name: '_liste', methods: ['GET'])]
-    public function liste(SerieRepository $serieRepository): Response
+    #[Route('/liste/{page}', name: '_liste', requirements: ['page'=> '\d+'], methods: ['GET'])]
+    public function liste(SerieRepository $serieRepository, ParameterBagInterface $parameterBag,
+                          int $page = 1): Response
     {
-        $series = $serieRepository->findAll();
+        //$series = $serieRepository->findAll();
+
+        //appel aux paramètres définis dans config/services.yaml
+        $limit = $parameterBag->get('nb_limit_series');
+        //restriction à page sup à 1
+        $page = max($page, 1);
+        $offset = ($page - 1) * $limit;
+
+        $criterias = [
+            'status' => 'returning',
+            'genres' => 'comédie'];
+
+        $nbTotal = $serieRepository->count($criterias);
+        $nbPagesMax = ceil($nbTotal / $limit);
+
+        $series = $serieRepository->findBy(
+            $criterias,
+            ['firstAirDate' => 'DESC',
+                'dateCreated' => 'DESC'
+            ],
+            $limit, $offset
+        );
 
         return $this->render('serie/liste.html.twig', [
             'series' => $series,
+            'page' => $page,
+            'nb_pages_max' => $nbPagesMax,
         ]);
     }
 }
