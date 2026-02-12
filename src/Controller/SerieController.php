@@ -51,6 +51,11 @@ final class SerieController extends AbstractController
         $nbTotal = $serieRepository->count($criterias);
         $nbPagesMax = ceil($nbTotal / $limit);
 
+        if ($page > $nbPagesMax) {
+            throw $this->createNotFoundException("La page $page n'existe pas.");
+        }
+
+        //méthode héritée qui utilise un tableau de critères binaires
         $series = $serieRepository->findBy(
             $criterias,
             ['firstAirDate' => 'DESC',
