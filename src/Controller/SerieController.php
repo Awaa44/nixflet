@@ -16,7 +16,7 @@ final class SerieController extends AbstractController
     #[Route('/test', name: '_test')]
     public function test(EntityManagerInterface $em): Response
     {
-        //création d'un objet serie
+        /*//création d'un objet serie
         $serie = new Serie();
         $serie->setName('Derrick')
             ->setOverview("inspecteur de choc")
@@ -27,26 +27,25 @@ final class SerieController extends AbstractController
             ->setDateCreated(new \DateTime());
 
         $em->persist($serie);
-        $em->flush();
+        $em->flush();*/
 
         return new Response('Une nouvelle série a été créée');
     }
 
     #[Route('/liste/{page}', name: '_liste', requirements: ['page'=> '\d+'], methods: ['GET'])]
-    public function liste(SerieRepository $serieRepository, ParameterBagInterface $parameterBag,
+    public function liste(SerieRepository $serieRepository,
                           int $page = 1): Response
     {
         //$series = $serieRepository->findAll();
 
         //appel aux paramètres définis dans config/services.yaml
-        $limit = $parameterBag->get('nb_limit_series');
+        $limit = $this->getParameter('nb_limit_series');
         //restriction à page sup à 1
         $page = max($page, 1);
         $offset = ($page - 1) * $limit;
 
         $criterias = [
-            'status' => 'returning',
-            'genres' => 'comédie'];
+            'status' => 'returning'];
 
         $nbTotal = $serieRepository->count($criterias);
         $nbPagesMax = ceil($nbTotal / $limit);
