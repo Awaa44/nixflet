@@ -24,16 +24,26 @@ class SerieRepository extends ServiceEntityRepository
             ->andWhere('s.status = :status OR s.firstAirDate <= :date')
             ->setParameter('status', $status)
             ->setParameter('date', $date)
-            ->orderBy('s.popularity', 'DESC')
-            ->setFirstResult($offset)
-            ->setMaxResults($limit);
+            ->orderBy('s.popularity', 'DESC');
+
 
             if($vote !== null){
-                $q->orWhere('s.vote >= 8')
+                $q->orWhere('s.vote >= :vote')
                     ->setParameter('vote', $vote);
             }
-            return $q->getQuery()
-                ->getResult();
+
+            //ici on compte la totalité du résultat de q1 c'est pour ca qu'on met offset et limit dans le return
+            $q2 = clone $q;
+            $q2->select('COUNT(s.id)');
+
+            return [
+                //ici résultat unique (le total)
+                $q2->getQuery()->getSingleScalarResult(),
+                //ici le résultat paginé
+                $q->setFirstResult($offset) //rang de la pagination calculé dans le controller
+                    ->setMaxResults($limit) //nb du résultat du lot
+                    ->getQuery()
+                ->getResult()];
 
     }
 
