@@ -47,6 +47,28 @@ class SerieRepository extends ServiceEntityRepository
 
     }
 
+    public function findSerieDQL(): array {
+        //les : permettent d'indiquer les paramètres à mettre dans le controller
+        $dql = "SELECT s FROM App\Entity\Serie s
+                WHERE (s.firstAirDate <= :date OR s.status = :status)
+                AND s.name like :partial
+                ORDER BY s.popularity DESC";
+
+        return $this->getEntityManager()->createQuery($dql)
+                    ->setParameters('date', new \Datetime('1990-01-01'))
+                    ->getResult();
+    }
+
+    public function getStats(): array {
+        $sql = <<<SQL
+    SELECT s.status, COUNT(s.id) FROM serie s GROUP BY status
+SQL;
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($sql)
+            ->fetchAssociative();
+    }
+
     //    /**
     //     * @return Serie[] Returns an array of Serie objects
     //     */
