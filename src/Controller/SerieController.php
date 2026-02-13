@@ -55,13 +55,15 @@ final class SerieController extends AbstractController
         }
 
         //méthode héritée qui utilise un tableau de critères binaires
-        $series = $serieRepository->findBy(
+/*        $series = $serieRepository->findBy(
             $criterias,
             ['firstAirDate' => 'DESC',
                 'dateCreated' => 'DESC'
             ],
             $limit, $offset
-        );
+        );*/
+
+        $series = $serieRepository->findSerieCustom($offset, $limit,'returning', new \DateTime('1990-01-01'));
 
         return $this->render('serie/liste.html.twig', [
             'series' => $series,
@@ -71,13 +73,7 @@ final class SerieController extends AbstractController
     }
 
     #[Route('/detail/{id}', name: '_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function detail($id, SerieRepository $serieRepository): Response {
-
-        $serie = $serieRepository->find($id);
-
-        if (!$serie) {
-            throw $this->createNotFoundException('La série' . $id . ' n\'existe pas.');
-        }
+    public function detail(Serie $serie): Response {
 
         return $this->render('serie/detail.html.twig', [
             'serie' => $serie,

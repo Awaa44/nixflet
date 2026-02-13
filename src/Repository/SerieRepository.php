@@ -16,6 +16,27 @@ class SerieRepository extends ServiceEntityRepository
         parent::__construct($registry, Serie::class);
     }
 
+    //ici on retourne un tableau (: array)
+    public function findSerieCustom(int $offset, int $limit, string $status, \Datetime $date, ?float $vote = null): array
+    {
+        //on fait toutes les requetes dans l'entité série (alias s)
+        $q = $this->createQueryBuilder('s')
+            ->andWhere('s.status = :status OR s.firstAirDate <= :date')
+            ->setParameter('status', $status)
+            ->setParameter('date', $date)
+            ->orderBy('s.popularity', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+            if($vote !== null){
+                $q->orWhere('s.vote >= 8')
+                    ->setParameter('vote', $vote);
+            }
+            return $q->getQuery()
+                ->getResult();
+
+    }
+
     //    /**
     //     * @return Serie[] Returns an array of Serie objects
     //     */
