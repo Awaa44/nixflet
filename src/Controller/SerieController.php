@@ -13,10 +13,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/serie', name: 'app_serie')]
 final class SerieController extends AbstractController
 {
-    #[Route('/test', name: '_test')]
+    /*#[Route('/test', name: '_test')]
     public function test(EntityManagerInterface $em): Response
     {
-        /*//création d'un objet serie
+        //création d'un objet serie
         $serie = new Serie();
         $serie->setName('Derrick')
             ->setOverview("inspecteur de choc")
@@ -27,10 +27,10 @@ final class SerieController extends AbstractController
             ->setDateCreated(new \DateTime());
 
         $em->persist($serie);
-        $em->flush();*/
+        $em->flush();
 
         return new Response('Une nouvelle série a été créée');
-    }
+    }*/
 
     #[Route('/liste/{page}', name: '_liste', requirements: ['page'=> '\d+'], methods: ['GET'])]
     public function liste(SerieRepository $serieRepository,
@@ -67,6 +67,20 @@ final class SerieController extends AbstractController
             'series' => $series,
             'page' => $page,
             'nb_pages_max' => $nbPagesMax,
+        ]);
+    }
+
+    #[Route('/detail/{id}', name: '_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function detail($id, SerieRepository $serieRepository): Response {
+
+        $serie = $serieRepository->find($id);
+
+        if (!$serie) {
+            throw $this->createNotFoundException('La série' . $id . ' n\'existe pas.');
+        }
+
+        return $this->render('serie/detail.html.twig', [
+            'serie' => $serie,
         ]);
     }
 }
