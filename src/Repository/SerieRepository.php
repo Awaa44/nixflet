@@ -55,13 +55,18 @@ class SerieRepository extends ServiceEntityRepository
                 ORDER BY s.popularity DESC";
 
         return $this->getEntityManager()->createQuery($dql)
-                    ->setParameters('date', new \Datetime('1990-01-01'))
-                    ->getResult();
+                    ->setParameter('date', new \Datetime('1990-01-01'))
+                    ->setParameter('status', 'ended')
+                    ->setParameter('partial', '%a%')
+                    ->setMaxResults(10)
+                    ->setFirstResult(0)
+                    ->execute();
     }
 
+    //FONCTION AVEC REQUETE SQL
     public function getStats(): array {
         $sql = <<<SQL
-    SELECT s.status, COUNT(s.id) FROM serie s GROUP BY status
+    SELECT s.status, COUNT(s.id) FROM serie s GROUP BY status;
 SQL;
         return $this->getEntityManager()
             ->getConnection()
