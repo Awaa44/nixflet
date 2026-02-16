@@ -3,10 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Serie;
+use App\Form\SerieType;
 use App\Repository\SerieRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -106,6 +108,40 @@ final class SerieController extends AbstractController
 
         return $this->render('serie/detail.html.twig', [
             'serie' => $serie,
+        ]);
+    }
+
+    //par défaut, une ROUTE est disponible en GET et POST
+    #[Route('/create', name: '_create')]
+    public function create(Request $request, EntityManagerInterface $em) : Response {
+
+        //instancier un objet Serie vide puis on le passe au formulaire
+        $serie = new Serie();
+
+        //on créé le formulaire en précisant le nom de la classe concernée et on passe l'objet série
+        $serieForm = $this->createForm(SerieType::class, $serie);
+
+        //permet de savoir si oui ou non une soumission a été faite
+        $serieForm->handleRequest($request);
+
+        //CAS NOMINAL
+        //si une soumission a été faite alors
+        if ($serieForm->isSubmitted() && $serieForm->isValid()) {
+            $serie->setDateCreated(new \DateTime());
+            //enregistrement en BDD avec EntityManagerInterface $em
+            $em->persist($serie);
+            $em->flush();
+
+            //message de confirmation d'ajout avec addFlash (il faut prévoir un espace dans Base
+            // pour afficher les messages Flash
+            $this->addFlash('success', 'Une nouvelle série a été enregistrée');
+            //redirection vers la liste des série
+            return $this->redirectToRoute('app_serie_liste');
+        }
+
+
+        return $this->render('serie/edit.html.twig', [
+            'serie_form' => $serieForm,
         ]);
     }
 
