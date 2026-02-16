@@ -113,7 +113,8 @@ final class SerieController extends AbstractController
 
     //par défaut, une ROUTE est disponible en GET et POST
     #[Route('/create', name: '_create')]
-    public function create(Request $request, EntityManagerInterface $em) : Response {
+    public function create(Request $request, EntityManagerInterface $em) : Response
+    {
 
         //instancier un objet Serie vide puis on le passe au formulaire
         $serie = new Serie();
@@ -136,13 +137,60 @@ final class SerieController extends AbstractController
             // pour afficher les messages Flash
             $this->addFlash('success', 'Une nouvelle série a été enregistrée');
             //redirection vers la liste des série
-            return $this->redirectToRoute('app_serie_liste');
+            return $this->redirectToRoute('app_serie_detail', ['id' => $serie->getId()]);
         }
-
 
         return $this->render('serie/edit.html.twig', [
             'serie_form' => $serieForm,
         ]);
+    }
+
+    #[Route('/update/{id}', name: '_update', requirements: ['id' => '\d+'])]
+    public function update(Request $request, EntityManagerInterface $em, Serie $serie) : Response
+    {
+        //on créé le formulaire en précisant le nom de la classe concernée et on passe l'objet série
+        $serieForm = $this->createForm(SerieType::class, $serie);
+
+        //permet de savoir si oui ou non une soumission a été faite
+        $serieForm->handleRequest($request);
+
+        //CAS NOMINAL
+        //si une soumission a été faite alors
+        if ($serieForm->isSubmitted() && $serieForm->isValid()) {
+            $serie->setDateModified(new \DateTime());
+            //modifier la base de données avec flush
+            $em->flush();
+
+            //message de confirmation d'ajout avec addFlash (il faut prévoir un espace dans Base
+            // pour afficher les messages Flash
+            $this->addFlash('success', "La série {$serie->getName()} a été modifiée");
+            //redirection vers la liste des série
+            return $this->redirectToRoute('app_serie_detail', ['id' => $serie->getId()]);
+        }
+
+        return $this->render('serie/edit.html.twig', [
+            'serie_form' => $serieForm,
+            'serie'=>$serie,
+        ]);
+    }
+
+    #[Route('/delete/{id}', name: '_delete', requirements: ['id' => '\d+'])]
+    public function delete(Serie $serie, EntityManagerInterface $em, Request $request) : Response
+    {
+        //on récupère le token de sécurité
+        $token = $request->query->get('token');
+
+        if($this->isCsrfTokenValid('serie_delete'.$serie->getId(), $token)){
+            $em->remove($serie);
+            $em->flush();
+
+            $this->addFlash('success', message: "Une série a été supprimée");
+            return $this->redirectToRoute('app_serie_liste');
+        }
+
+        //si pas de token
+        $this->addFlash('danger', message: "Impossible de supprimer le serie");
+        return $this->redirectToRoute('app_serie_detail', ['id' => $serie->getId()]);
     }
 
 
