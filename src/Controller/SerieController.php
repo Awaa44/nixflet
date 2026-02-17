@@ -104,7 +104,10 @@ final class SerieController extends AbstractController
     }
 
     #[Route('/detail/{id}', name: '_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function detail(Serie $serie): Response {
+    public function detail(int $id, SerieRepository $serieRepository): Response {
+
+        //utilisation de la fonction custom faite dans le repository
+        $serie = $serieRepository->getSerieWithSeasons($id);
 
         return $this->render('serie/detail.html.twig', [
             'serie' => $serie,
