@@ -128,7 +128,8 @@ final class SerieController extends AbstractController
         //CAS NOMINAL
         //si une soumission a été faite alors
         if ($serieForm->isSubmitted() && $serieForm->isValid()) {
-            $serie->setDateCreated(new \DateTime());
+            //Mise à jour de la date à la date du jour (plus necessaire car configuré dans Entity)
+            //$serie->setDateCreated(new \DateTime());
             //enregistrement en BDD avec EntityManagerInterface $em
             $em->persist($serie);
             $em->flush();
@@ -157,7 +158,8 @@ final class SerieController extends AbstractController
         //CAS NOMINAL
         //si une soumission a été faite alors
         if ($serieForm->isSubmitted() && $serieForm->isValid()) {
-            $serie->setDateModified(new \DateTime());
+            //Mise à jour de la date à la date du jour (plus necessaire car configuré dans Entity)
+            //$serie->setDateModified(new \DateTime());
             //modifier la base de données avec flush
             $em->flush();
 
