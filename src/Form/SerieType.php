@@ -22,6 +22,7 @@ class SerieType extends AbstractType
                 'required' => false,
             ])
             ->add('overview')
+            ->add('genres')
             ->add('status', ChoiceType::class, [
                 'required' => false,
                 'choices' => [
@@ -35,7 +36,6 @@ class SerieType extends AbstractType
                 'required' => false,
             ])
             ->add('popularity')
-            ->add('genres')
             ->add('firstAirDate', DateType::class, [
                 'widget' => 'choice',
                 'years' => range(1900, date('Y')),  // De 1900 à l'année actuelle
