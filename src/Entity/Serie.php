@@ -5,11 +5,14 @@ namespace App\Entity;
 use App\Repository\SerieRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: SerieRepository::class)]
+#[ORM\UniqueConstraint(columns: ['name', 'first_air_date'])]
+#[UniqueEntity(fields: ['name', 'firstAirDate'], message: 'Cette série "{{ name }}" existe déjà.')]
 class Serie
 {
     #[ORM\Id]
@@ -50,6 +53,22 @@ class Serie
     #[Assert\Type("\DateTimeInterface")]
     #[Assert\GreaterThan(propertyPath: 'firstAirDate',
         message: 'La date doit être supérieure à {{ compared_value }}')]
+    #[Assert\When(
+        //si status == returning
+        expression: "this.getStatus() == 'returning'",
+        //je vérifie que la date de fin est vide
+        constraints: [
+            new Assert\Blank(message: "Le statut choisi ne peut pas avoir de date de fin")
+        ]
+    )]
+    #[Assert\When(
+        //si status !== returning
+        expression: "!this.getStatus() == 'returning'",
+        //je vérifie que la date de fin est vide
+        constraints: [
+            new Assert\Blank(message: "Le statut choisi implique une date de fin")
+        ]
+    )]
     private ?\DateTime $lastAirDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
