@@ -11,8 +11,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/serie', name: 'app_serie')]
+#[IsGranted("ROLE_USER")]
 final class SerieController extends AbstractController
 {
     #[Route('/liste/find_by/{page}', name: '_liste_find_by', requirements: ['page'=> '\d+'], methods: ['GET'])]
@@ -116,6 +118,7 @@ final class SerieController extends AbstractController
 
     //par défaut, une ROUTE est disponible en GET et POST
     #[Route('/create', name: '_create')]
+    #[IsGranted("ROLE_CONTRIB")]
     public function create(Request $request, EntityManagerInterface $em) : Response
     {
 
@@ -150,6 +153,7 @@ final class SerieController extends AbstractController
     }
 
     #[Route('/update/{id}', name: '_update', requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_CONTRIB")]
     public function update(Request $request, EntityManagerInterface $em, Serie $serie) : Response
     {
         //on créé le formulaire en précisant le nom de la classe concernée et on passe l'objet série
@@ -180,6 +184,7 @@ final class SerieController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: '_delete', requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
     public function delete(Serie $serie, EntityManagerInterface $em, Request $request) : Response
     {
         //on récupère le token de sécurité
