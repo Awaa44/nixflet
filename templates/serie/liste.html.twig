@@ -15,7 +15,7 @@
     <section class="series-list">
         {% for serie in series %}
             <a href="{{ path('app_serie_detail', {id: serie.id}) }}">
-                <img src="{{ asset('resources/posters/series/' ~ serie.poster) }}" width="220px"
+                <img src="{{ asset(poster_public_path ~ '/' ~ serie.poster) }}" width="220px"
                      alt="{{ 'Poster de ' ~ serie.name }}" loading="lazy">
                 {# affichage des numéros de saisons sous l'image #}
                 {% for season in serie.seasons %}

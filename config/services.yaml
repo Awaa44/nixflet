@@ -8,6 +8,9 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     nb_limit_series: 14
+    poster_upload_dir: '%kernel.project_dir%/public/resources/posters/series'  # DISQUE
+    poster_public_path: '/resources/posters/series'                            # URL
+
 services:
     # default configuration for services in *this* file
     _defaults:

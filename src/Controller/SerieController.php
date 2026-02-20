@@ -4,14 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Serie;
 use App\Form\SerieType;
+use App\Helper\FileManager;
 use App\Repository\SerieRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/serie', name: 'app_serie')]
 #[IsGranted("ROLE_USER")]
@@ -119,9 +122,8 @@ final class SerieController extends AbstractController
     //par défaut, une ROUTE est disponible en GET et POST
     #[Route('/create', name: '_create')]
     #[IsGranted("ROLE_CONTRIB")]
-    public function create(Request $request, EntityManagerInterface $em) : Response
+    public function create(Request $request, EntityManagerInterface $em, FileManager $fileManager) : Response
     {
-
         //instancier un objet Serie vide puis on le passe au formulaire
         $serie = new Serie();
 
@@ -137,6 +139,14 @@ final class SerieController extends AbstractController
             //Mise à jour de la date à la date du jour (plus necessaire car configuré dans Entity)
             //$serie->setDateCreated(new \DateTime());
             //enregistrement en BDD avec EntityManagerInterface $em
+
+            //Récupération d'une image dans le controller
+            $file = $serieForm->get('posterFile')->getData();
+            if($file instanceof UploadedFile) {
+                $newName = $fileManager->upload($file, $this->getParameter('poster_upload_dir'), $serie->getName());
+                $serie->setPoster($newName);
+            }
+
             $em->persist($serie);
             $em->flush();
 
@@ -154,7 +164,7 @@ final class SerieController extends AbstractController
 
     #[Route('/update/{id}', name: '_update', requirements: ['id' => '\d+'])]
     #[IsGranted("ROLE_CONTRIB")]
-    public function update(Request $request, EntityManagerInterface $em, Serie $serie) : Response
+    public function update(Request $request, EntityManagerInterface $em, Serie $serie, FileManager $fileManager) : Response
     {
         //on créé le formulaire en précisant le nom de la classe concernée et on passe l'objet série
         $serieForm = $this->createForm(SerieType::class, $serie);
@@ -165,9 +175,13 @@ final class SerieController extends AbstractController
         //CAS NOMINAL
         //si une soumission a été faite alors
         if ($serieForm->isSubmitted() && $serieForm->isValid()) {
-            //Mise à jour de la date à la date du jour (plus necessaire car configuré dans Entity)
-            //$serie->setDateModified(new \DateTime());
-            //modifier la base de données avec flush
+            $file = $serieForm->get('posterFile')->getData();
+
+            if($file instanceof UploadedFile) {
+                $newName = $fileManager->upload($file, $this->getParameter('poster_upload_dir'), $serie->getName());
+                $serie->setPoster($newName);
+            }
+
             $em->flush();
 
             //message de confirmation d'ajout avec addFlash (il faut prévoir un espace dans Base
