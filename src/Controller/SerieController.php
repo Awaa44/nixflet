@@ -178,7 +178,7 @@ final class SerieController extends AbstractController
             $file = $serieForm->get('posterFile')->getData();
 
             if($file instanceof UploadedFile) {
-                $newName = $fileManager->upload($file, $this->getParameter('poster_upload_dir'), $serie->getName());
+                $newName = $fileManager->upload($file, $this->getParameter('poster_upload_dir'), $serie->getPoster());
                 $serie->setPoster($newName);
             }
 

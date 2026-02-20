@@ -10,11 +10,15 @@ class FileManager{
     //pour utiliser slugger il faut faire un constructeur
     public function __construct(private SluggerInterface $slugger){}
 
-    public function upload(UploadedFile $file, string $dir, string $basicName)
+    public function upload(UploadedFile $file, string $dir, string $basicName, ?string $oldFileToDelete = null): string
     {
         $newName = sprintf('%s-%s.%s', $this->slugger->slug($basicName), uniqid(), $file->guessExtension());
         //on indique où est envoyé le fichier uploadé
         $file->move($dir, $newName);
+
+        if ($oldFileToDelete && file_exists($dir.'/'.$oldFileToDelete)) {
+            unlink($dir.'/'.$oldFileToDelete);
+        }
 
         return $newName;
     }
